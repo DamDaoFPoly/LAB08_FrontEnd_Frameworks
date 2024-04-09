@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Bài 1</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  </head>
+  <body ng-app="myapp">
+    <div class="container" ng-controller="ProductController">
+      <h2>Danh sách sản phẩm</h2>
+      <ul>
+        <li ng-repeat="product inproducts">
+          <strong>ID</strong>{{product.pid}}<br>
+          <strong>Name</strong>{{product.name}}<br>
+          <strong>Price</strong>{{product.price}}<br>
+          <strong>Description</strong>{{product.description}}<br>
+          <button ng-click="editProduct(product)">Edit</button>
+          <button ng-click="deleteProduct(product)">Delete</button>
+          <hr>
+        </li>
+      </ul>
+      <h2>Thêm/Sửa sản phẩm</h2>
+      <form action="" ng-submit="saveProduct()">
+        <label for="name">Name:</label>
+        <input type="text" id="name" ng-model="product.name" required><br><br>
+        <label for="name">Price:</label>
+        <input type="text" id="price" ng-model="product.price" required><br><br>
+        <label for="name">Description:</label>
+        <input type="text" id="description" ng-model="product.description" required><br><br>
+        <button type="submit">Save product</button>
+      </form>
+    </div>
+    <script>
+      var app = angular.module("myapp", []);
+      app.controller('ProductController', function($scope, $http){
+        $scope.products = [];
+        $scope.product = {};
+        $scope.message = '';
+        //Lấy tất cả sản phẩm
+        $scope.getAllProducts = function(){
+          $http({
+            method: 'GET',
+            url: 'http://192.168.34.103/API/read_prd.php'
+          }).then(function(response){
+            $scope.products = response.data;
+          }, function(error){
+            console.error("Có lỗi".error);
+          });
+        };
+        $scope.getAllProducts();
+        //Lưu sản phẩm
+        $scope.saveProduct = function(){
+          if($scope.product.pid){
+            //Update
+            $http({
+              method: 'POST',
+              url: 'http://192.168.34.103/API/update_prd.php',
+              headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded'
+              },
+              data: 'pid=' +$scope.product.pid+
+              '&name=' +$scope.product.name+
+              '&price=' +$scope.product.price+
+              '&description=' +$scope.product.description
+            }).then(function(response){
+              $scope.message = response.data;
+              $scope.getAllProducts();
+            }, function(error){
+              console.error("Lỗi: "+error);
+              $scope.message = error;
+            });
+          }
+          else
+          {
+            //Trường hợp thêm mới sản phẩm
+            $http({
+              method: 'POST',
+              url: 'http://192.168.34.103/API/create_prd.php',
+              headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded'
+              },
+              data: 'pid=' +$scope.product.pid+
+              '&name=' +$scope.product.name+
+              '&price=' +$scope.product.price+
+              '&description=' +$scope.product.description
+            });
+          };
+        };
+        $scope.editProduct = function(product){
+          $scope.product = angular.copy(product);
+        };
+        $scope.deleteProduct = function(product){
+          var confirmDelete = confirm('Bạn có muốn xóa không?');
+          if(confirmDelete){
+            $http({
+              method: 'POST',
+              url: 'http://192.168.34.103/API/delete_prd.php',
+              headers: {
+                'Content-Type' : 'application/x-www-form-urlencoded'
+              },
+              data: 'pid=' +product.pid
+            }).then(function(response){
+              $scope.message = response.data;
+              $scope.getAllProducts();
+            }, function(error){
+              console.error("Lỗi: "+error);
+              $scope.message = error;
+            });
+          }
+        };
+      });
+    </script>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+      integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+      integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+      crossorigin="anonymous"
+    ></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+  </body>
+</html>
